@@ -1,0 +1,22 @@
+# Python virtual environment
+.venv/
+venv/
+
+# Distribution
+.dist/
+dist/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Environment variables / secrets
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

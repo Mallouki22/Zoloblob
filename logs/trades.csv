@@ -1,0 +1,19 @@
+datetime,symbol,signal,confidence,entry,sl,tp,lot,status
+2026-07-19 01:05:12.094910,XAUUSD-STD,BUY,0.522,,,,,Confiance insuffisante
+2026-07-20 12:02:40.643737,XAUUSD,SELL,0.47,,,,,Confiance insuffisante
+2026-07-20 12:24:16.572841,XAUUSD,BUY,0.361,,,,,Confiance insuffisante
+2026-08-01 01:20:36.406721,XAUUSD,BUY,0.363,,,,,Confiance insuffisante
+2026-08-01 13:57:09.868758,XAUUSD,BUY,0.363,,,,,Confiance insuffisante
+2026-08-01 14:06:05.168036,XAUUSD,BUY,0.363,,,,,Confiance insuffisante
+2026-08-01 14:08:05.723603,XAUUSD,BUY,0.363,,,,,DXY ne confirme pas le trade
+2026-08-01 14:09:36.200826,XAUUSD,BUY,0.363,,,,,DXY ne confirme pas le trade
+2026-08-01 14:12:45.437229,XAUUSD,BUY,0.363,,,,,DXY ne confirme pas le trade
+2026-08-03 13:26:43.962756,XAUUSD,SELL,0.383,,,,,Nombre maximal de positions atteint
+2026-08-03 13:30:04.178021,XAUUSD,BUY,0.369,,,,,DXY ne confirme pas le trade
+2026-08-03 13:36:48.627629,XAUUSD,BUY,0.358,,,,,DXY ne confirme pas le trade
+2026-08-03 13:44:44.336821,XAUUSD,SELL,0.384,4044.49,4058.4906693857756,4016.488661228448,6.42,OPENED
+2026-08-03 13:45:11.352118,XAUUSD,BUY,0.375,,,,,DXY ne confirme pas le trade
+2026-08-03 14:00:12.291432,XAUUSD,BUY,0.371,,,,,DXY ne confirme pas le trade
+2026-08-03 14:24:25.563036,XAUUSD,SELL,0.37,,,,,Nombre maximal de positions atteint
+2026-08-03 14:30:22.989998,XAUUSD,BUY,0.365,,,,,DXY ne confirme pas le trade
+2026-08-03 14:47:15.818143,XAUUSD,BUY,0.375,,,,,DXY ne confirme pas le trade
