@@ -1,43 +1,38 @@
-"""
-Candle Watcher
-
-Détecte l'arrivée d'une nouvelle bougie.
-"""
-
 import time
 
 
 class CandleWatcher:
+    """
+    Détecte une nouvelle bougie clôturée.
+    """
 
     def __init__(self):
-
-        self.last_candle = None
-
+        self.last_closed_candle = None
 
     def wait_new_candle(self, downloader):
-
         while True:
-
             df = downloader.download_latest()
 
-            current = df.iloc[-1]["time"]
+            if df is None or len(df) < 2:
+                print("⏳ Pas assez de données...")
+                time.sleep(10)
+                continue
 
-            if self.last_candle is None:
+            df = df.sort_values("time").reset_index(drop=True)
 
-                self.last_candle = current
+            # -1 = bougie en formation
+            # -2 = dernière bougie clôturée
+            closed_candle = df.iloc[-2]["time"]
 
-                print(f"🕒 Bougie actuelle : {current}")
-
+            if self.last_closed_candle is None:
+                self.last_closed_candle = closed_candle
+                print(f"🕒 Dernière bougie clôturée : {closed_candle}")
                 return
 
-            if current != self.last_candle:
-
-                self.last_candle = current
-
-                print(f"✅ Nouvelle bougie : {current}")
-
+            if closed_candle != self.last_closed_candle:
+                self.last_closed_candle = closed_candle
+                print(f"✅ Nouvelle bougie clôturée : {closed_candle}")
                 return
 
-            print("⏳ Attente de la prochaine bougie...")
-
+            print("⏳ Attente de la prochaine bougie clôturée...")
             time.sleep(10)

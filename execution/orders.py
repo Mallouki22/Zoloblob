@@ -25,7 +25,6 @@ class OrderManager:
 
 
     def _send(self, symbol, volume, order_type, sl, tp):
-
         tick = self.client.symbol_tick(symbol)
 
         if tick is None:
@@ -38,25 +37,31 @@ class OrderManager:
             else tick.bid
         )
 
+        filling_mode = self.client.filling_mode(symbol)
+
+        if filling_mode is None:
+            filling_mode = mt5.ORDER_FILLING_IOC
+
         request = {
             "action": mt5.TRADE_ACTION_DEAL,
             "symbol": symbol,
-            "volume": volume,
+            "volume": float(volume),
             "type": order_type,
-            "price": price,
-            "sl": sl,
-            "tp": tp,
+            "price": float(price),
+            "sl": float(sl),
+            "tp": float(tp),
             "deviation": DEVIATION,
             "magic": MAGIC_NUMBER,
             "comment": "AI Trading Bot",
             "type_time": mt5.ORDER_TIME_GTC,
-            "type_filling": mt5.ORDER_FILLING_IOC,
-           }
+            "type_filling": filling_mode,
+        }
+
         print("\n===== ORDER REQUEST =====")
 
         for key, value in request.items():
-
             print(f"{key} : {value}")
+
         result = self.client.send_order(request)
 
         if result is None:
@@ -72,7 +77,6 @@ class OrderManager:
         print("Ticket :", result.order)
 
         return result
-
 
     def buy(self, symbol, volume, sl, tp):
 

@@ -26,12 +26,11 @@ DEFAULT_BARS = 100000
 # ==========================
 
 LOT_SIZE = 0.01
-
 MAGIC_NUMBER = 20260717
-
 MAX_OPEN_TRADES = 1
-
+MAX_TRADES_PER_DIRECTION = 1
 DEVIATION = 20
+
 
 # ==========================
 # AI
@@ -41,20 +40,23 @@ MIN_CONFIDENCE = 0.30
 BUY_MIN_CONFIDENCE = MIN_CONFIDENCE
 SELL_MIN_CONFIDENCE = MIN_CONFIDENCE
 
+
 # ==========================
 # RISK MANAGEMENT
 # ==========================
 
 RISK_PERCENT = 0.01
-
 RISK_REWARD_RATIO = 2.0
-
 ATR_MULTIPLIER = 2
 
-MAX_DAILY_LOSS = 0.03
-
+MAX_DAILY_LOSS = 0.02
 MAX_CONSECUTIVE_LOSSES = 3
 
+ENABLE_BREAK_EVEN = False
+BREAK_EVEN_ATR_TRIGGER = 1.0
+
+ENABLE_TRAILING_STOP = False
+TRAILING_ATR_MULTIPLIER = 1.0
 # Position management is implemented in both simulation and live monitoring.
 # It remains disabled by default so updating the software never changes an
 # existing account's behaviour without an explicit configuration choice.
@@ -97,9 +99,9 @@ TP2_VOLUME = 0.25
 TP3_VOLUME = 0.50
 
 HIGH_CONFIDENCE = 0.80
-MAX_OPEN_TRADES = 6
-MAX_TRADES_PER_DIRECTION = 2
+
 MIN_SCORE = 80
+
 TREND_SCORE = 20
 MARKET_STRUCTURE_SCORE = 20
 BOS_SCORE = 20
@@ -107,6 +109,7 @@ LIQUIDITY_SCORE = 20
 DXY_SCORE = 20
 HTF_SCORE = 20
 ATR_SCORE = 20
+
 USE_ADX_FILTER = True
 USE_CHOP_FILTER = True
 
@@ -115,6 +118,7 @@ MAX_CHOP = 55
 
 ADX_SCORE = 15
 CHOP_SCORE = 15
+
 ORDER_BLOCK_SCORE = 20
 FVG_SCORE = 15
 PD_SCORE = 10

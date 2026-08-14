@@ -49,12 +49,7 @@ class TradeExecutor:
         )
         self.planner = TradePlanner()
 
-    def execute(
-        self,
-        prediction,
-        symbol,
-    ):
-
+    def execute(self, prediction, symbol):
         account = self.order_manager.client.account_info()
 
         if account is None:
@@ -69,17 +64,7 @@ class TradeExecutor:
         print("TradeValidator :", allowed, reason)
 
         if not allowed:
-
             print("🚫 Trade refusé :", reason)
-
-            self.logger.log(
-                symbol,
-                prediction,
-                entry,
-                sl,
-                lot,
-                status,
-            )
             return False
 
         signal = prediction["signal"]
@@ -87,18 +72,10 @@ class TradeExecutor:
         tick = self.order_manager.client.symbol_tick(symbol)
 
         if tick is None:
-
             print("❌ Tick indisponible.")
-
             return False
 
-        if signal == "BUY":
-
-            entry = tick.ask
-
-        else:
-
-            entry = tick.bid
+        entry = tick.ask if signal == "BUY" else tick.bid
 
         plan = self.planner.build(
             prediction["market"].iloc[-1:],
@@ -106,25 +83,20 @@ class TradeExecutor:
         )
 
         if plan is None:
-
             print("❌ Impossible de construire le plan.")
-
             return False
 
         sl = plan["sl"]
-
         tp1 = plan["tp1"]
-
         tp2 = plan["tp2"]
-
         tp3 = plan["tp3"]
-
         stop_distance = plan["risk"]
+
         prediction["sl"] = sl
         prediction["tp1"] = tp1
         prediction["tp2"] = tp2
         prediction["tp3"] = tp3
-        prediction["risk"] = plan["risk"]
+        prediction["risk"] = stop_distance
 
         lot = self.sizer.calculate(
             symbol=symbol,
@@ -133,58 +105,45 @@ class TradeExecutor:
             stop_loss_distance=stop_distance,
         )
 
+        if lot is None or lot <= 0:
+            print("❌ Volume invalide :", lot)
+            return False
+
         print("\n===== TRADE =====")
         print("Signal :", signal)
         print("Entry  :", entry)
         print("Lot    :", lot)
         print("SL     :", sl)
-        print("TP1 :", tp1)
-        print("TP2 :", tp2)
-        print("TP3 :", tp3)
-        print("Risk :", plan["risk"])
-        print("Score:", prediction["score"])
+        print("TP1    :", tp1)
+        print("TP2    :", tp2)
+        print("TP3    :", tp3)
+        print("Risk   :", stop_distance)
+        print("Score  :", prediction.get("score"))
+
         if signal == "BUY":
-
             results = self.order_manager.buy_multi(
-
                 symbol,
-
                 lot,
-
                 sl,
-
                 tp1,
-
                 tp2,
-
                 tp3,
             )
-
         else:
-
             results = self.order_manager.sell_multi(
-
                 symbol,
-
                 lot,
-
                 sl,
-
                 tp1,
-
                 tp2,
-
                 tp3,
             )
 
         status = "FAILED"
 
         for result in results:
-
             if result is not None:
-
                 if result.retcode == mt5.TRADE_RETCODE_DONE:
-
                     status = "OPENED"
 
         self.logger.log(
