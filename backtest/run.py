@@ -21,8 +21,11 @@ def main():
     confidence = np.max(probabilities, axis=1)
 
     print("===== DIAGNOSTIC DE CONFIANCE (hors échantillon) =====")
-    print(confidence_diagnostics(test_frame["target"].map({-1: 0, 0: 1, 1: 2}), predictions, probabilities).to_string(index=False))
-
+    confidence_diagnostics(
+        test_frame["target"],
+        predictions,
+        probabilities
+    )
     engine = BacktestEngine(test_frame, predictions, confidence)
     trades = engine.run()
     print("===== BACKTEST PRUDENT =====")

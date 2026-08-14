@@ -29,32 +29,45 @@ class Predictor:
             self.feature_names,
         )
 
-        prediction = self.model.predict(model_frame)[0]
+        prediction = int(
+            self.model.predict(model_frame)[0]
+        )
 
-        probabilities = self.model.predict_proba(model_frame)[0]
-
-        confidence = max(probabilities)
+        probabilities = (
+            self.model.predict_proba(model_frame)[0]
+        )
 
         mapping = {
-
             0: "SELL",
-
             1: "WAIT",
-
             2: "BUY",
         }
+
+        confidence = float(
+            probabilities[prediction]
+        )
 
         return {
 
             "signal": mapping[prediction],
 
-            "confidence": float(confidence),
+            "confidence": confidence,
+
+            "probabilities": {
+                "SELL": float(probabilities[0]),
+                "WAIT": float(probabilities[1]),
+                "BUY": float(probabilities[2]),
+            },
 
             "score": 0,
 
-            "price": float(last["close"].iloc[0]),
+            "price": float(
+                last["close"].iloc[0]
+            ),
 
-            "atr": float(last["ATR"].iloc[0]),
+            "atr": float(
+                last["ATR"].iloc[0]
+            ),
 
             "market": last.copy(),
 
