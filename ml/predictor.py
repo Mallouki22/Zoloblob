@@ -1,75 +1,87 @@
-"""
-Trading Predictor
-"""
+from __future__ import annotations
 
-import joblib
+import numpy as np
 
-from config.settings import MODEL_PATH
-from features.schema import model_input
+
+SELL = 0
+WAIT = 1
+BUY = 2
 
 
 class Predictor:
 
-    def __init__(self):
+    def __init__(
+        self,
+        model,
+        min_confidence=0.65,
+    ):
 
-        self.model = joblib.load(MODEL_PATH)
+        self.model = model
 
-        self.feature_names = getattr(
-            self.model,
-            "feature_names_in_",
-            None,
+        self.min_confidence = (
+            min_confidence
         )
 
-    def predict(self, df):
-
-        last = df.tail(1)
-
-        model_frame = model_input(
-            last,
-            self.feature_names,
-        )
-
-        prediction = int(
-            self.model.predict(model_frame)[0]
-        )
+    def predict(self, X):
 
         probabilities = (
-            self.model.predict_proba(model_frame)[0]
+            self.model.predict_proba(X)
         )
 
-        mapping = {
-            0: "SELL",
-            1: "WAIT",
-            2: "BUY",
-        }
+        prediction = np.argmax(
+            probabilities,
+            axis=1,
+        )
+
+        confidence = probabilities.max(
+            axis=1
+        )
+
+        signals = np.full(
+            len(prediction),
+            WAIT,
+            dtype=np.int8,
+        )
+
+        valid = (
+            confidence
+            >= self.min_confidence
+        )
+
+        signals[
+            valid
+        ] = prediction[valid]
+
+        return signals
+
+    def predict_one(self, X):
+
+        probabilities = (
+            self.model.predict_proba(X)
+        )[0]
+
+        prediction = int(
+            np.argmax(probabilities)
+        )
 
         confidence = float(
-            probabilities[prediction]
+            probabilities.max()
         )
 
+        if confidence < self.min_confidence:
+
+            prediction = WAIT
+
         return {
-
-            "signal": mapping[prediction],
-
+            "signal": prediction,
             "confidence": confidence,
-
-            "probabilities": {
-                "SELL": float(probabilities[0]),
-                "WAIT": float(probabilities[1]),
-                "BUY": float(probabilities[2]),
-            },
-
-            "score": 0,
-
-            "price": float(
-                last["close"].iloc[0]
+            "sell_probability": float(
+                probabilities[SELL]
             ),
-
-            "atr": float(
-                last["ATR"].iloc[0]
+            "wait_probability": float(
+                probabilities[WAIT]
             ),
-
-            "market": last.copy(),
-
-            "time": last["time"].iloc[0],
+            "buy_probability": float(
+                probabilities[BUY]
+            ),
         }
