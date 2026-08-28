@@ -1,29 +1,49 @@
-from bot.trading_engine import TradingEngine
+import joblib
 
+from bot.trading_engine import TradingEngine
 from execution.orders import OrderManager
 from strategy.risk import RiskManager
 from ml.predictor import Predictor
 
 
+MODEL_PATH = "models/xgboost_gold.pkl"
+
+
 def main():
 
-    predictor = Predictor()
+    # =========================
+    # LOAD MODEL
+    # =========================
+
+    artifact = joblib.load(MODEL_PATH)
+
+    if not isinstance(artifact, dict):
+        raise TypeError(
+            "Model artifact invalide : dict attendu."
+        )
+
+    ensemble = artifact["ensemble"]
+
+    predictor = Predictor(
+        model=ensemble
+    )
+
+    # =========================
+    # MT5 / ORDER / RISK
+    # =========================
 
     order_manager = OrderManager()
 
-    account = order_manager.client.account_info()
-    if account is None:
-        raise RuntimeError("Impossible de récupérer le compte MT5.")
+    risk_manager = RiskManager()
 
-    risk_manager = RiskManager(
-        capital=account.balance,
-        risk=0.01
-    )
+    # =========================
+    # TRADING ENGINE
+    # =========================
 
     engine = TradingEngine(
         predictor=predictor,
         order_manager=order_manager,
-        risk_manager=risk_manager
+        risk_manager=risk_manager,
     )
 
     engine.start()

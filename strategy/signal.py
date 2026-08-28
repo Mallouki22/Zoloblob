@@ -1,8 +1,15 @@
 """
-Signal Generator
+Final signal generation.
+
+ML + confidence gate.
 """
 
 import numpy as np
+
+
+SELL = "SELL"
+WAIT = "WAIT"
+BUY = "BUY"
 
 
 class SignalGenerator:
@@ -10,29 +17,47 @@ class SignalGenerator:
     def __init__(
         self,
         model,
-        threshold=0.60
+        buy_threshold=0.70,
+        sell_threshold=0.70,
     ):
-
         self.model = model
-        self.threshold = threshold
+        self.buy_threshold = float(buy_threshold)
+        self.sell_threshold = float(sell_threshold)
 
+    def generate_one(self, X):
 
-    def generate(self, X):
+        probabilities = self.model.predict_proba(X)[0]
 
-        probabilities = self.model.predict_proba(X)
+        sell_probability = float(probabilities[0])
+        wait_probability = float(probabilities[1])
+        buy_probability = float(probabilities[2])
 
-        signals = []
+        if (
+            buy_probability >= self.buy_threshold
+            and buy_probability > sell_probability
+        ):
+            signal = BUY
+            confidence = buy_probability
 
-        for proba in probabilities:
+        elif (
+            sell_probability >= self.sell_threshold
+            and sell_probability > buy_probability
+        ):
+            signal = SELL
+            confidence = sell_probability
 
-            confidence = np.max(proba)
+        else:
+            signal = WAIT
+            confidence = max(
+                sell_probability,
+                wait_probability,
+                buy_probability,
+            )
 
-            prediction = np.argmax(proba)
-
-            if confidence < self.threshold:
-
-                prediction = 1      # WAIT
-
-            signals.append(prediction)
-
-        return np.array(signals)
+        return {
+            "signal": signal,
+            "confidence": confidence,
+            "sell_probability": sell_probability,
+            "wait_probability": wait_probability,
+            "buy_probability": buy_probability,
+        }

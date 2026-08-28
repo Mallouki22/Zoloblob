@@ -4,14 +4,13 @@ Higher Time Frame Filter
 
 import MetaTrader5 as mt5
 
-from data.market_data import MarketData
-
+from data.market_data import MarketDataManager
 
 class HTFTrend:
 
     def __init__(self):
 
-        self.market = MarketData()
+        self.market = MarketDataManager()
 
     def direction(
         self,

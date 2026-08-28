@@ -10,11 +10,64 @@ def main():
         "datasets/XAUUSD_ML_100k.parquet"
     )
 
-    _, X_test, _, _ = dataset.prepare()
+    _, X_test, _, y_test = dataset.prepare()
 
-    model = joblib.load(
+    data = joblib.load(
         "models/xgboost_gold.pkl"
     )
+
+    print("\n===== MODEL TYPE =====")
+    print(type(data))
+
+    if isinstance(data, dict):
+
+        print("\n===== MODEL KEYS =====")
+        print(data.keys())
+
+        for key, value in data.items():
+            print(
+                f"{key}: {type(value)}"
+            )
+
+        model = None
+
+        for key in [
+            "model",
+            "xgboost",
+            "estimator",
+            "classifier",
+            "best_model",
+        ]:
+
+            if key in data and hasattr(
+                data[key],
+                "predict"
+            ):
+                model = data[key]
+                break
+
+        if model is None:
+
+            for value in data.values():
+
+                if hasattr(
+                    value,
+                    "predict"
+                ):
+                    model = value
+                    break
+
+        if model is None:
+            raise TypeError(
+                "Aucun objet modèle trouvé dans le dictionnaire."
+            )
+
+    else:
+
+        model = data
+
+    print("\n===== REAL MODEL =====")
+    print(type(model))
 
     predictions = model.predict(
         X_test
@@ -61,6 +114,23 @@ def main():
     print(
         "BUY :",
         np.sum(predictions == 2)
+    )
+
+    print("\n===== ACTUAL =====")
+
+    print(
+        "SELL :",
+        np.sum(y_test == 0)
+    )
+
+    print(
+        "WAIT :",
+        np.sum(y_test == 1)
+    )
+
+    print(
+        "BUY :",
+        np.sum(y_test == 2)
     )
 
 

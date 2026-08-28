@@ -1,87 +1,83 @@
-from __future__ import annotations
-
+import joblib
 import numpy as np
-
-
-SELL = 0
-WAIT = 1
-BUY = 2
+import pandas as pd
 
 
 class Predictor:
 
-    def __init__(
-        self,
-        model,
-        min_confidence=0.65,
-    ):
+    def __init__(self, model):
+        if isinstance(model, str):
+            model = joblib.load(model)
 
-        self.model = model
+        self.model_data = model
 
-        self.min_confidence = (
-            min_confidence
-        )
+        if isinstance(model, dict):
+            self.model = model["ensemble"]
+            self.features = model["features"]
+            self.classes = model["classes"]
+            self.threshold = model.get("threshold", 0.50)
+        else:
+            self.model = model
+            self.features = None
+            self.classes = [0, 1, 2]
+            self.threshold = 0.50
 
-    def predict(self, X):
+    def predict(self, df):
 
-        probabilities = (
-            self.model.predict_proba(X)
-        )
+        data = df.copy()
 
-        prediction = np.argmax(
+        if self.features is not None:
+            missing = [
+                col for col in self.features
+                if col not in data.columns
+            ]
+
+            if missing:
+                raise ValueError(
+                    f"Features manquantes: {missing}"
+                )
+
+            X = data[self.features]
+
+        else:
+            X = data
+
+        X = X.replace(
+            [np.inf, -np.inf],
+            np.nan
+        ).ffill().bfill()
+
+        probabilities = self.model.predict_proba(X)
+
+        probabilities = np.asarray(probabilities)
+
+        predictions = np.argmax(
             probabilities,
-            axis=1,
-        )
-
-        confidence = probabilities.max(
             axis=1
         )
 
-        signals = np.full(
-            len(prediction),
-            WAIT,
-            dtype=np.int8,
+        confidence = np.max(
+            probabilities,
+            axis=1
         )
 
-        valid = (
-            confidence
-            >= self.min_confidence
-        )
+        prediction = int(predictions[-1])
+        confidence_value = float(confidence[-1])
 
-        signals[
-            valid
-        ] = prediction[valid]
+        row = data.iloc[-1]
 
-        return signals
-
-    def predict_one(self, X):
-
-        probabilities = (
-            self.model.predict_proba(X)
-        )[0]
-
-        prediction = int(
-            np.argmax(probabilities)
-        )
-
-        confidence = float(
-            probabilities.max()
-        )
-
-        if confidence < self.min_confidence:
-
-            prediction = WAIT
+        signal_map = {
+            0: -1,
+            1: 0,
+            2: 1,
+        }
 
         return {
-            "signal": prediction,
-            "confidence": confidence,
-            "sell_probability": float(
-                probabilities[SELL]
-            ),
-            "wait_probability": float(
-                probabilities[WAIT]
-            ),
-            "buy_probability": float(
-                probabilities[BUY]
-            ),
+            "signal": signal_map[prediction],
+            "class": prediction,
+            "confidence": confidence_value,
+            "probabilities": probabilities[-1],
+            "atr": float(row["ATR"]),
+            "price": float(row["close"]),
+            "time": row["time"],
         }
